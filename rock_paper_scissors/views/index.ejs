@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Rock, Paper, Scissors</title>
+        <script src="/socket.io/socket.io.js"></script>
+        <script type="text/javascript">
+            const socket = io();
+            let round = 0;
+
+            socket.on('player', function (data) {
+                let playerElement = document.getElementById('player');
+                playerElement.innerHTML = 'You are player <b>' + data + '</b>';
+            });
+
+            function makeMove(move) {
+                socket.emit('makeMove', move);
+            }
+
+            socket.on('roundResult', function (data) {
+                console.log('result');
+                round += 1;
+                let resultText = `Round <b>${round}</b> <br><br> Player <b>${data.player1.name}</b> chose <b>${data.player1.move}</b>,<br> 
+                Player <b>${data.player2.name}</b> chose <b>${data.player2.move}</b>. 
+                `;
+
+                if (data.winner === 'Draw!') {
+                    resultText += '<br> Draw! <br> <br>';
+                } else {
+                    resultText += `<br> Winner is <b>${data.winner}</b>! <br> <br>`;
+                }
+
+                document.getElementById('result').innerHTML += resultText;
+            });
+
+            socket.on('gameWinner', function (data) {
+                document.getElementById('rock').disabled = true;
+                document.getElementById('paper').disabled = true;
+                document.getElementById('scissors').disabled = true;
+                document.getElementById('win').hidden = false;
+
+                document.getElementById('gameWinner').innerHTML =
+                    '<b>' + data + '</b> has won the game!';
+            });
+        </script>
+    </head>
+    <body>
+        <h1>Welcome to Rock, Paper, Scissors</h1>
+        <p id="player"></p>
+
+        <button id="rock" onclick="makeMove('rock')">Rock</button>
+        <button id="paper" onclick="makeMove('paper')">Paper</button>
+        <button id="scissors" onclick="makeMove('scissors')">Scissors</button>
+
+        <h2>Result, best to 3 wins</h2>
+        <p id="result"></p>
+
+        <h2 id="win" hidden>Game Winner</h2>
+        <p id="gameWinner"></p>
+    </body>
+</html>
